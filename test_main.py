@@ -1,5 +1,5 @@
 import asyncio
-from aiohttp import web
+from aiohttp import web, ClientSession
 from aiogram import Bot, Dispatcher, Router, types, F
 from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_application
 from aiogram.filters import CommandStart
@@ -39,9 +39,13 @@ async def send_data(callback_query: types.CallbackQuery):
     data = {
         "test": "test"
     }
-    response = requests.post(url, json=data)
-    print(response.json())
-    return
+    async with ClientSession() as session:
+        async with session.post(url, json=data) as response:
+            if response.headers['Content-Type'] == 'application/json':
+                response_data = await response.json()
+                print(response_data)
+            else:
+                print(f"Unexpected content type: {response.headers['Content-Type']}")
 
 async def handle_post(request: Request):
     try:
@@ -88,6 +92,7 @@ async def main():
         app.router.add_static('/assets/', path='./dist/assets', name='assets')
         app.router.add_post('/post', handle_post)
         app.router.add_post('/send', send_data)
+        app.router.add_get('/send', send_data)
 
         webhook_requests_handler = SimpleRequestHandler(
             dispatcher=dp,
