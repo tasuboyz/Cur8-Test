@@ -78,7 +78,7 @@ function App() {
 
         window.Telegram.WebApp.showPopup({
             title: "Messaggio Ricevuto",
-            message: `Titolo: ${data.title}\nDescrizione: ${data.description}\nTag: ${data.tag}\nData e Ora: ${data.dateTime}\nUser ID: ${data.userId}`,
+            message: `${data}`,
             buttons: [{ type: 'ok' }]
         });
     } catch (error) {
