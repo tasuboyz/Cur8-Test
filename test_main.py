@@ -91,8 +91,8 @@ async def main():
         app.router.add_get('/', handle)
         app.router.add_static('/assets/', path='./dist/assets', name='assets')
         app.router.add_post('/post', handle_post)
-        app.router.add_post('/send', send_data)
-        app.router.add_get('/send', send_data)
+        #app.router.add_post('/send', send_data)
+        #app.router.add_get('/send', send_data)
 
         webhook_requests_handler = SimpleRequestHandler(
             dispatcher=dp,
