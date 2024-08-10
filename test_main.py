@@ -23,7 +23,7 @@ WEBHOOK_PATH = r"/webhook"
 WEBHOOK_SECRET = "my-secret"
 # Base URL for webhook will be used to generate webhook URL for Telegram,
 # in this example it is used public DNS with HTTPS support
-BASE_WEBHOOK_URL = "https://08a1-2-36-105-41.ngrok-free.app"
+BASE_WEBHOOK_URL = "https://f337-2-36-105-41.ngrok-free.app"
 
 # All handlers should be attached to the Router (or Dispatcher)
 router = Router()
@@ -63,6 +63,19 @@ async def handle_post(request: Request):
         print(f"Errore durante la gestione della richiesta POST: {e}")
         return web.json_response({'status': 'error', 'message': 'Errore durante la gestione della richiesta POST'}, status=500)
 
+async def websocket_handler(request):
+    ws = web.WebSocketResponse()
+    await ws.prepare(request)
+
+    async for msg in ws:
+        if msg.type == web.WSMsgType.TEXT:
+            await ws.send_str(f"Message received: {msg.data}")
+        elif msg.type == web.WSMsgType.ERROR:
+            print(f"WebSocket connection closed with exception {ws.exception()}")
+
+    print("WebSocket connection closed")
+    return ws
+
 def post_link():
     keyboard = []
     keyboard.append([types.InlineKeyboardButton(text="link", web_app=types.WebAppInfo(url=BASE_WEBHOOK_URL))])
@@ -91,6 +104,7 @@ async def main():
         app.router.add_get('/', handle)
         app.router.add_static('/assets/', path='./dist/assets', name='assets')
         app.router.add_post('/post', handle_post)
+        app.router.add_get('/ws', websocket_handler)
         #app.router.add_post('/send', send_data)
         #app.router.add_get('/send', send_data)
 
