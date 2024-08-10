@@ -34,7 +34,7 @@ function App() {
       };
 
       try {
-          const response = await fetch('https://08a1-2-36-105-41.ngrok-free.app/post', {
+          const response = await fetch('https://f337-2-36-105-41.ngrok-free.app/post', {
               method: 'POST',
               headers: headers,
               body: JSON.stringify(post)
@@ -58,38 +58,6 @@ function App() {
           console.error('Errore durante l\'invio del messaggio:', error);
       }
   };
-  const riceviMessaggio = async (): Promise<void> => {
-    const headers = {
-        "accept": "application/json",
-        "authorization": "Bearer my-secret"
-    };
-
-    try {
-        const response = await fetch('https://08a1-2-36-105-41.ngrok-free.app/send', {
-            method: 'GET',
-            headers: headers
-        });
-
-        if (!response.ok) {
-            throw new Error('Errore durante la ricezione del messaggio');
-        }
-
-        const data = await response.json();
-
-        window.Telegram.WebApp.showPopup({
-            title: "Messaggio Ricevuto",
-            message: `${data}`,
-            buttons: [{ type: 'ok' }]
-        });
-    } catch (error) {
-        window.Telegram.WebApp.showPopup({
-            title: "Errore",
-            message: "Si è verificato un errore durante la ricezione del messaggio.",
-            buttons: [{ type: 'ok' }]
-        });
-        console.error('Errore durante la ricezione del messaggio:', error);
-    }
-};
   const getUserInfo = () => {
     const user = window.Telegram.WebApp.initDataUnsafe.user;
     if (user) {
@@ -113,9 +81,32 @@ React.useEffect(() => {
 }, []);
 
 React.useEffect(() => {
-  const intervalId = setInterval(riceviMessaggio, 5000); // Esegui la funzione ogni 5 secondi
+  const socket = new WebSocket('wss://f337-2-36-105-41.ngrok-free.app/ws');
 
-  return () => clearInterval(intervalId); // Pulisci l'intervallo quando il componente viene smontato
+  socket.onopen = () => {
+    console.log('WebSocket connection established');
+  };
+
+  socket.onmessage = (event) => {
+    const data = JSON.parse(event.data);
+    window.Telegram.WebApp.showPopup({
+      title: "Messaggio Ricevuto",
+      message: `${data}`,
+      buttons: [{ type: 'ok' }]
+    });
+  };
+
+  socket.onerror = (error) => {
+    console.error('WebSocket error:', error);
+  };
+
+  socket.onclose = () => {
+    console.log('WebSocket connection closed');
+  };
+
+  return () => {
+    socket.close();
+  };
 }, []);
 
 React.useEffect(() => {
