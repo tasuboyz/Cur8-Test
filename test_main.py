@@ -4,7 +4,8 @@ from aiogram import Bot, Dispatcher, Router, types, F
 from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_application
 from aiogram.filters import CommandStart
 from aiohttp.web import Request, json_response
-import requests
+import websockets
+import json
 
 TOKEN = "6348055484:AAGhOv6sx5B4acQj-XUfRWV3kJz53FvioWs" #TasuAdmin
 
@@ -35,11 +36,14 @@ async def command_start_handler(message: types.Message) -> None:
 
 @router.callback_query(F.data == 'send_data')
 async def send_data(callback_query: types.CallbackQuery):
-    url = f"{BASE_WEBHOOK_URL}/send"
-    data = {
-        "test": "test"
-    }
-    return
+    uri = "wss://f337-2-36-105-41.ngrok-free.app/ws"
+    async with websockets.connect(uri) as websocket:
+        data = {
+            "data": "data"
+        }
+        await websocket.send(json.dumps(data))
+        response = await websocket.recv()
+        print(f"Risposta dal server: {response}")
 
 async def handle_post(request: Request):
     try:
