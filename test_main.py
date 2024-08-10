@@ -39,13 +39,7 @@ async def send_data(callback_query: types.CallbackQuery):
     data = {
         "test": "test"
     }
-    async with ClientSession() as session:
-        async with session.post(url, json=data) as response:
-            if response.headers['Content-Type'] == 'application/json':
-                response_data = await response.json()
-                print(response_data)
-            else:
-                print(f"Unexpected content type: {response.headers['Content-Type']}")
+    return
 
 async def handle_post(request: Request):
     try:
