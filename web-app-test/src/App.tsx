@@ -9,6 +9,8 @@ declare global {
   }
 }
 
+const BASE_URL = '95de-240b-10-5e2-1800-c4e2-7f30-2b43-e752.ngrok-free.app';
+
 function App() {
   const [titolo, setTitolo] = React.useState('');
   const [description, setDescription] = React.useState('');
@@ -34,7 +36,7 @@ function App() {
       };
 
       try {
-          const response = await fetch('https://f337-2-36-105-41.ngrok-free.app/post', {
+          const response = await fetch(`https://${BASE_URL}/post`, {
               method: 'POST',
               headers: headers,
               body: JSON.stringify(post)
@@ -62,17 +64,6 @@ function App() {
     const user = window.Telegram.WebApp.initDataUnsafe.user;
     if (user) {
         setUserId(user.id);
-        window.Telegram.WebApp.showPopup({
-            title: "Informazioni Utente",
-            message: `User Info: ${JSON.stringify(user)}`,
-            buttons: [{ type: 'ok' }]
-        });
-    } else {
-        window.Telegram.WebApp.showPopup({
-            title: "Errore",
-            message: 'No user info available',
-            buttons: [{ type: 'ok' }]
-        });
     }
 };
 
@@ -81,23 +72,32 @@ React.useEffect(() => {
 }, []);
 
 React.useEffect(() => {
-  const socket = new WebSocket('wss://f337-2-36-105-41.ngrok-free.app/ws');
+  const socket = new WebSocket(`wss://${BASE_URL}/ws`);
 
   socket.onopen = () => {
-    console.log('WebSocket connection established');
+    window.Telegram.WebApp.showPopup({
+      title: "Connessione Stabilita",
+      message: "La connessione WebSocket è stata stabilita con successo!",
+      buttons: [{ type: 'ok' }]
+    });
   };
 
   socket.onmessage = (event) => {
     const data = JSON.parse(event.data);
     window.Telegram.WebApp.showPopup({
       title: "Messaggio Ricevuto",
-      message: `${data}`,
+      message: `Dati ricevuti: ${JSON.stringify(data)}`,
       buttons: [{ type: 'ok' }]
     });
-  };
+  };  
 
   socket.onerror = (error) => {
     console.error('WebSocket error:', error);
+    window.Telegram.WebApp.showPopup({
+      title: "Errore WebSocket",
+      message: `Si è verificato un errore: ${error}`,
+      buttons: [{ type: 'ok' }]
+    });
   };
 
   socket.onclose = () => {
