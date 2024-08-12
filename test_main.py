@@ -24,7 +24,9 @@ WEBHOOK_PATH = r"/webhook"
 WEBHOOK_SECRET = "my-secret"
 # Base URL for webhook will be used to generate webhook URL for Telegram,
 # in this example it is used public DNS with HTTPS support
-BASE_WEBHOOK_URL = "https://f337-2-36-105-41.ngrok-free.app"
+app = "8dff-240b-10-5e2-1800-15ac-6891-773e-5182.ngrok-free.app"
+
+BASE_WEBHOOK_URL = f"https://{app}"
 
 # All handlers should be attached to the Router (or Dispatcher)
 router = Router()
@@ -36,7 +38,7 @@ async def command_start_handler(message: types.Message) -> None:
 
 @router.callback_query(F.data == 'send_data')
 async def send_data(callback_query: types.CallbackQuery):
-    uri = "wss://f337-2-36-105-41.ngrok-free.app/ws"
+    uri = f"wss://{app}/ws"
     async with websockets.connect(uri) as websocket:
         data = {
             "data": "data"
