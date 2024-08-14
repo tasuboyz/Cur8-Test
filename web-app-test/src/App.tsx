@@ -72,44 +72,6 @@ React.useEffect(() => {
 }, []);
 
 React.useEffect(() => {
-  const socket = new WebSocket(`wss://${BASE_URL}/ws`);
-
-  socket.onopen = () => {
-    window.Telegram.WebApp.showPopup({
-      title: "Connessione Stabilita",
-      message: "La connessione WebSocket è stata stabilita con successo!",
-      buttons: [{ type: 'ok' }]
-    });
-  };
-
-  socket.onmessage = (event) => {
-    const data = JSON.parse(event.data);
-    window.Telegram.WebApp.showPopup({
-      title: "Messaggio Ricevuto",
-      message: `Dati ricevuti: ${JSON.stringify(data)}`,
-      buttons: [{ type: 'ok' }]
-    });
-  };  
-
-  socket.onerror = (error) => {
-    console.error('WebSocket error:', error);
-    window.Telegram.WebApp.showPopup({
-      title: "Errore WebSocket",
-      message: `Si è verificato un errore: ${error}`,
-      buttons: [{ type: 'ok' }]
-    });
-  };
-
-  socket.onclose = () => {
-    console.log('WebSocket connection closed');
-  };
-
-  return () => {
-    socket.close();
-  };
-}, []);
-
-React.useEffect(() => {
   const savedTags = localStorage.getItem('tags');
   if (savedTags) {
     setTag(savedTags);
