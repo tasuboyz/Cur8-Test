@@ -9,7 +9,7 @@ declare global {
   }
 }
 
-const BASE_URL = '95de-240b-10-5e2-1800-c4e2-7f30-2b43-e752.ngrok-free.app';
+const BASE_URL = 'ws://127.0.0.1:5173/ws';
 
 function App() {
   const [titolo, setTitolo] = React.useState('');
@@ -17,6 +17,7 @@ function App() {
   const [tag, setTag] = React.useState('steemit steemexclusive');
   const [dateTime, setDateTime] = React.useState('');
   const [userId, setUserId] = React.useState<number | null>(null);
+  const [webSocketData, setWebSocketData] = React.useState('');
   // const [showContextMenu, setShowContextMenu] = useState(false);
   // const [initData, setInitData] = useState('');
 
@@ -36,7 +37,7 @@ function App() {
       };
 
       try {
-          const response = await fetch(`https://${BASE_URL}/post`, {
+          const response = await fetch(`https://3471-240b-10-5e2-1800-2cac-522d-da1c-3d29.ngrok-free.app/post`, {
               method: 'POST',
               headers: headers,
               body: JSON.stringify(post)
@@ -48,7 +49,7 @@ function App() {
 
           window.Telegram.WebApp.showPopup({
               title: "Messaggio Inviato",
-              message: "Il tuo messaggio è stato inviato con successo!",
+              message: `Il tuo messaggio è stato inviato con successo! Dato WebSocket: ${webSocketData}`,
               buttons: [{ type: 'ok' }]
           });
       } catch (error) {
@@ -69,6 +70,56 @@ function App() {
 
 React.useEffect(() => {
     getUserInfo();
+}, []);
+
+React.useEffect(() => {
+  const socket = new WebSocket(`${BASE_URL}`);
+
+  socket.onopen = () => {
+    window.Telegram.WebApp.showPopup({
+      title: "Connessione Stabilita",
+      message: "La connessione WebSocket è stata stabilita con successo!",
+      buttons: [{ type: 'ok' }]
+    });
+  };
+  
+  socket.onmessage = (event) => {
+    try {
+      const data = JSON.parse(event.data);
+      setWebSocketData(data); 
+      window.Telegram.WebApp.showPopup({
+        title: "Messaggio Ricevuto",
+        message: `Dati ricevuti: ${JSON.stringify(data)}`,
+        buttons: [{ type: 'ok' }]
+      });
+    } catch (error) {
+      window.Telegram.WebApp.showPopup({
+        title: "Errore di Parsing",
+        message: `Errore nel parsing del messaggio: ${error}`,
+        buttons: [{ type: 'ok' }]
+      });
+    }
+  };
+
+  socket.onerror = (error) => {
+    window.Telegram.WebApp.showPopup({
+      title: "Errore WebSocket",
+      message: `Si è verificato un errore: ${error}`,
+      buttons: [{ type: 'ok' }]
+    });
+  };
+
+  socket.onclose = () => {
+    window.Telegram.WebApp.showPopup({
+      title: "Connessione Chiusa",
+      message: "La connessione WebSocket è stata chiusa.",
+      buttons: [{ type: 'ok' }]
+    });
+  };
+
+  return () => {
+    socket.close();
+  };
 }, []);
 
 React.useEffect(() => {
