@@ -1,7 +1,7 @@
 import React from 'react';
 import './App.css'
 import { Telegram } from "@twa-dev/types";
-//import { formatText } from './format/FormatText';
+import { SOCKET_URL, URL } from './hooks/config';
 
 declare global {
   interface Window {
@@ -9,15 +9,13 @@ declare global {
   }
 }
 
-const BASE_URL = 'ws://127.0.0.1:5173/ws';
-
 function App() {
   const [titolo, setTitolo] = React.useState('');
   const [description, setDescription] = React.useState('');
   const [tag, setTag] = React.useState('steemit steemexclusive');
   const [dateTime, setDateTime] = React.useState('');
   const [userId, setUserId] = React.useState<number | null>(null);
-  const [webSocketData, setWebSocketData] = React.useState('');
+  const [webSocketData, setWebSocketData] = React.useState([]);
   // const [showContextMenu, setShowContextMenu] = useState(false);
   // const [initData, setInitData] = useState('');
 
@@ -37,7 +35,7 @@ function App() {
       };
 
       try {
-          const response = await fetch(`https://3471-240b-10-5e2-1800-2cac-522d-da1c-3d29.ngrok-free.app/post`, {
+          const response = await fetch(`${URL}/post`, {
               method: 'POST',
               headers: headers,
               body: JSON.stringify(post)
@@ -49,18 +47,56 @@ function App() {
 
           window.Telegram.WebApp.showPopup({
               title: "Messaggio Inviato",
-              message: `Il tuo messaggio è stato inviato con successo! Dato WebSocket: ${webSocketData}`,
+              message: `Il tuo messaggio è stato inviato con successo!`,
               buttons: [{ type: 'ok' }]
           });
       } catch (error) {
           window.Telegram.WebApp.showPopup({
               title: "Errore",
-              message: "Si è verificato un errore durante l'invio del messaggio.",
+              message: `Si è verificato un errore durante l'invio del messaggio ${error}`,
               buttons: [{ type: 'ok' }]
           });
           console.error('Errore durante l\'invio del messaggio:', error);
       }
   };
+  
+  const inviaComando = async (): Promise<void> => {
+    const headers = {
+        "accept": "application/json",
+        "authorization": "Bearer my-secret",
+        "Content-Type": "application/json"
+    };
+
+    const post = {
+        command: "command: community"
+    };
+
+    try {
+        const response = await fetch(`${URL}/community`, {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify(post)
+        });
+
+        if (!response.ok) {
+            throw new Error('Errore durante l\'invio del messaggio');
+        }
+
+        window.Telegram.WebApp.showPopup({
+            title: "Messaggio Inviato",
+            message: `Il tuo messaggio è stato inviato con successo!`,
+            buttons: [{ type: 'ok' }]
+        });
+    } catch (error) {
+        window.Telegram.WebApp.showPopup({
+            title: "Errore",
+            message: "Si è verificato un errore durante l'invio del messaggio.",
+            buttons: [{ type: 'ok' }]
+        });
+        console.error('Errore durante l\'invio del messaggio:', error);
+    }
+};
+
   const getUserInfo = () => {
     const user = window.Telegram.WebApp.initDataUnsafe.user;
     if (user) {
@@ -73,7 +109,7 @@ React.useEffect(() => {
 }, []);
 
 React.useEffect(() => {
-  const socket = new WebSocket(`${BASE_URL}`);
+  const socket = new WebSocket(SOCKET_URL);
 
   socket.onopen = () => {
     window.Telegram.WebApp.showPopup({
@@ -87,11 +123,11 @@ React.useEffect(() => {
     try {
       const data = JSON.parse(event.data);
       setWebSocketData(data); 
-      window.Telegram.WebApp.showPopup({
-        title: "Messaggio Ricevuto",
-        message: `Dati ricevuti: ${JSON.stringify(data)}`,
-        buttons: [{ type: 'ok' }]
-      });
+      // window.Telegram.WebApp.showPopup({
+      //   title: "Messaggio Ricevuto",
+      //   message: `Dati ricevuti: ${JSON.stringify(data)}`,
+      //   buttons: [{ type: 'ok' }]
+      // });
     } catch (error) {
       window.Telegram.WebApp.showPopup({
         title: "Errore di Parsing",
@@ -121,6 +157,13 @@ React.useEffect(() => {
     socket.close();
   };
 }, []);
+
+const scrollList = () => {
+  const listElement = document.getElementById('list');
+  if (listElement) {
+    listElement.scrollBy(0, 100); // Scorre di 100px
+  }
+};
 
 React.useEffect(() => {
   const savedTags = localStorage.getItem('tags');
@@ -208,6 +251,12 @@ React.useEffect(() => {
         value={dateTime} 
         onChange={(e) => setDateTime(e.target.value)} 
       />
+      <div id="list" style={{ height: '100px', overflowY: 'scroll' }}>
+      {webSocketData.map((item, index) => (
+        <div key={index}>{item}</div>
+      ))}
+      </div>
+      <button onClick={() => { scrollList(); inviaComando(); }}>Scorri Elenco e Invia Comando</button>
       {/* Bottone di invio post */}
       <button className="button" onClick={inviaMessaggio}>Send Post</button>
     </div>
