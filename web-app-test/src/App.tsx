@@ -1,7 +1,7 @@
 import React from 'react';
 import './App.css'
 import { Telegram } from "@twa-dev/types";
-import { SOCKET_URL, URL } from './hooks/config';
+import { SOCKET_URL, URL } from './setup/config';
 
 declare global {
   interface Window {
