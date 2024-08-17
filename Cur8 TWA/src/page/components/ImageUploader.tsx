@@ -4,7 +4,7 @@ interface ImageUploaderProps {
   onImageUpload: (imageBase64: string) => void;
 }
 
-const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageUpload }) => {
+export const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageUpload }) => {
   const handleImageChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
